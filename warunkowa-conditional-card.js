@@ -52,9 +52,14 @@ class WarunkowaConditionalCard extends LitElement {
     return LitElement.prototype.shouldUpdate.call(this, changedProps);
   }
 
+  generateCard() {
+    return this.shouldDisplay ? this.card : null;
+  }
+
   render() {
+    const card = this.generateCard();
     return html`
-      ${this.shouldDisplay ? this.card : ''}
+      ${card}
     `;
   }
 

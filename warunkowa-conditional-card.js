@@ -24,9 +24,17 @@ class WarunkowaConditionalCard extends HTMLElement {
         break;
     }
 
-    this.content.innerHTML = `
-      ${shouldDisplay ? this.config.card : ''}
-    `;
+    // Usuń poprzednią kartę
+    if (this.card) {
+      this.content.removeChild(this.card);
+      this.card = null;
+    }
+
+    // Stwórz i dodaj nową kartę
+    if (shouldDisplay) {
+      this.card = hass.createCard(this.config.card);
+      this.content.appendChild(this.card);
+    }
   }
 
   setConfig(config) {
@@ -38,6 +46,9 @@ class WarunkowaConditionalCard extends HTMLElement {
     }
     if (!config.value) {
       throw new Error('You need to define a value');
+    }
+    if (!config.card) {
+      throw new Error('You need to define a card');
     }
     this.config = config;
   }

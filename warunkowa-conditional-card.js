@@ -5,7 +5,6 @@ import {
 } from "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
 
 class WarunkowaConditionalCard extends LitElement {
-
   static get properties() {
     return {
       hass: {},
@@ -53,7 +52,19 @@ class WarunkowaConditionalCard extends LitElement {
     return LitElement.prototype.shouldUpdate.call(this, changedProps);
   }
 
-  // Continue your code here...
+  render() {
+    return html`
+      ${this.shouldDisplay ? this.card : ''}
+    `;
+  }
+
+  createRenderRoot() {
+    return this;
+  }
+
+  getCardSize() {
+    return this.shouldDisplay ? 1 : 0;
+  }
 }
 
 customElements.define('warunkowa-conditional-card', WarunkowaConditionalCard);

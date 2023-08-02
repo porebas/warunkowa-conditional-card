@@ -5,7 +5,6 @@ import {
 } from "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
 
 class WarunkowaConditionalCard extends LitElement {
-
   static get properties() {
     return {
       hass: {},
@@ -48,19 +47,23 @@ class WarunkowaConditionalCard extends LitElement {
           break;
       }
       this.shouldDisplay = shouldDisplay;
-      if (shouldDisplay) {
-        this.card.hass = this.hass;
-      }
+      this.card.hass = this.hass;
     }
     return LitElement.prototype.shouldUpdate.call(this, changedProps);
   }
 
   render() {
-    return this.generateCard();
+    return html`
+      ${this.shouldDisplay ? this.card : ''}
+    `;
   }
 
-  generateCard() {
-    return this.shouldDisplay ? this.card : html``;
+  createRenderRoot() {
+    return this;
+  }
+
+  getCardSize() {
+    return this.shouldDisplay ? 1 : 0;
   }
 }
 

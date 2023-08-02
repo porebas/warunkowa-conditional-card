@@ -1,2 +1,2 @@
-# warunkowa_conditional_card
+# warunkowa-conditional-card
 testowa

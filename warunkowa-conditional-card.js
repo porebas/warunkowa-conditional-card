@@ -1,61 +1,73 @@
-class WarunkowaConditionalCard extends HTMLElement {
-  set hass(hass) {
-    if (!this.content) {
-      const card = document.createElement('ha-card');
-      this.content = document.createElement('div');
-      this.content.style.padding = '0 16px 16px';
-      card.appendChild(this.content);
-      this.appendChild(card);
+customElements.whenDefined('card-tools').then(() => {
+  var ct = customElements.get('card-tools');
+  
+  class WarunkowaConditionalCard extends ct.LitElement {
+  
+    static get properties() {
+      return {
+        config: {},
+        hass: {},
+      };
     }
-
-    const entityId = this.config.entity;
-    const condition = this.config.condition;
-    const value = parseFloat(this.config.value);
-
-    const entityState = parseFloat(hass.states[entityId].state);
-
-    let shouldDisplay = false;
-    switch (condition) {
-      case 'above':
-        shouldDisplay = entityState > value;
-        break;
-      case 'below':
-        shouldDisplay = entityState < value;
-        break;
+  
+    setConfig(config) {
+      if (!config.entity) {
+        throw new Error('You need to define an entity');
+      }
+      if (!config.condition) {
+        throw new Error('You need to define a condition');
+      }
+      if (!config.value) {
+        throw new Error('You need to define a value');
+      }
+      if (!config.card) {
+        throw new Error('You need to define a card');
+      }
+  
+      this.config = config;
     }
-
-    // Usuń poprzednią kartę
-    if (this.card) {
-      this.content.removeChild(this.card);
-      this.card = null;
+  
+    shouldUpdate(changedProps) {
+      if (changedProps.has('hass')) {
+        const entityId = this.config.entity;
+        const entityState = parseFloat(this.hass.states[entityId].state);
+        const condition = this.config.condition;
+        const value = parseFloat(this.config.value);
+  
+        let shouldDisplay = false;
+        switch (condition) {
+          case 'above':
+            shouldDisplay = entityState > value;
+            break;
+          case 'below':
+            shouldDisplay = entityState < value;
+            break;
+        }
+        this.shouldDisplay = shouldDisplay;
+      }
+      return ct.LitElement.prototype.shouldUpdate.call(this, changedProps);
     }
-
-    // Stwórz i dodaj nową kartę
-    if (shouldDisplay) {
-      this.card = hass.createCard(this.config.card);
-      this.content.appendChild(this.card);
+  
+    render() {
+      if (!this.shouldDisplay) {
+        return ct.LitHtml ``;
+      }
+      return ct.LitHtml `
+        <ha-card>
+          <div>
+            <h1>To jest twoja karta</h1>
+            <p>Wyświetla się tylko wtedy, gdy warunek jest spełniony.</p>
+          </div>
+        </ha-card>
+      `;
     }
+  
+    getCardSize() {
+      return 1;
+    }
+  
   }
-
-  setConfig(config) {
-    if (!config.entity) {
-      throw new Error('You need to define an entity');
-    }
-    if (!config.condition) {
-      throw new Error('You need to define a condition');
-    }
-    if (!config.value) {
-      throw new Error('You need to define a value');
-    }
-    if (!config.card) {
-      throw new Error('You need to define a card');
-    }
-    this.config = config;
-  }
-
-  getCardSize() {
-    return 1;
-  }
-}
-
-customElements.define('warunkowa-conditional-card', WarunkowaConditionalCard);
+  
+  customElements.define('warunkowa-conditional-card', WarunkowaConditionalCard);
+  
+});

@@ -1,70 +1,79 @@
-import {
-  LitElement,
-  html,
-  css,
-} from "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
+customElements.whenDefined('card-tools').then(() => {
+  const cardTools = customElements.get('card-tools');
 
-class WarunkowaConditionalCard extends LitElement {
-  static get properties() {
-    return {
-      hass: {},
-      config: {},
-    };
-  }
+  class ConditionalCard extends cardTools.LitElement {
 
-  setConfig(config) {
-    if (!config.entity) {
-      throw new Error('You need to define an entity');
-    }
-    if (!config.condition) {
-      throw new Error('You need to define a condition');
-    }
-    if (!config.value) {
-      throw new Error('You need to define a value');
-    }
-    if (!config.card) {
-      throw new Error('You need to define a card');
+    static get properties() {
+      return {
+        config: {},
+        hass: {},
+      };
     }
 
-    this.config = config;
-    this.card = config.card;
-  }
+    setConfig(config) {
+      this.validateConfig(config);
+      this.config = config;
+      this.card = cardTools.createCard(config.card);
+    }
 
-  shouldUpdate(changedProps) {
-    if (changedProps.has('hass')) {
-      const entityId = this.config.entity;
-      const entityState = parseFloat(this.hass.states[entityId].state);
-      const condition = this.config.condition;
-      const value = parseFloat(this.config.value);
+    validateConfig(config) {
+      const requiredConfigFields = ['entity', 'condition', 'value', 'card'];
+      requiredConfigFields.forEach(field => {
+        if (!config[field]) {
+          throw new Error(`You need to define a ${field}`);
+        }
+      });
+    }
 
-      let shouldDisplay = false;
+    shouldUpdate(changedProps) {
+      if (changedProps.has('hass')) {
+        this.updateDisplayCondition();
+        this.card.hass = this.hass;
+      }
+      return cardTools.LitElement.prototype.shouldUpdate.call(this, changedProps);
+    }
+
+    updateDisplayCondition() {
+      const { entity, condition, value } = this.config;
+      const entityState = this.getEntityState(entity);
+
       switch (condition) {
         case 'above':
-          shouldDisplay = entityState > value;
+          this.shouldDisplay = entityState > parseFloat(value);
           break;
         case 'below':
-          shouldDisplay = entityState < value;
+          this.shouldDisplay = entityState < parseFloat(value);
           break;
+        default:
+          this.shouldDisplay = false;
       }
-      this.shouldDisplay = shouldDisplay;
-      this.card.hass = this.hass;
     }
-    return LitElement.prototype.shouldUpdate.call(this, changedProps);
+
+    getEntityState(entityId) {
+      const entityState = this.hass.states[entityId];
+      if (!entityState) {
+        throw new Error(`No state found for entity: ${entityId}`);
+      }
+      return parseFloat(entityState.state);
+    }
+
+    render() {
+      if (!this.shouldDisplay) {
+        return null;
+      }
+      return cardTools.LitHtml `
+        <ha-card>
+          ${cardTools.LitHtml `${this.card}`}
+        </ha-card>
+      `;
+    }
+
+    getCardSize() {
+      return this.card.getCardSize();
+    }
+
   }
 
-  render() {
-    return html`
-      ${this.shouldDisplay ? this.card : ''}
-    `;
-  }
+  customElements.define('conditional-card', ConditionalCard);
 
-  createRenderRoot() {
-    return this;
-  }
-
-  getCardSize() {
-    return this.shouldDisplay ? 1 : 0;
-  }
-}
-
-customElements.define('warunkowa-conditional-card', WarunkowaConditionalCard);
+});

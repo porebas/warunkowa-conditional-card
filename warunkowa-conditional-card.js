@@ -1,4 +1,4 @@
-class CustomConditionalCard extends HTMLElement {
+class WarunkowaConditionalCard extends HTMLElement {
   set hass(hass) {
     if (!this.content) {
       const card = document.createElement('ha-card');
@@ -47,4 +47,4 @@ class CustomConditionalCard extends HTMLElement {
   }
 }
 
-customElements.define('custom-conditional-card', CustomConditionalCard);
+customElements.define('warunkowa-conditional-card', WarunkowaConditionalCard);

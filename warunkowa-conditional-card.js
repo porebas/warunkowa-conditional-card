@@ -1,8 +1,7 @@
-(async () => {
-  await customElements.whenDefined('card-tools');
-  const cardTools = customElements.get('card-tools');
+customElements.whenDefined('card-tools').then(() => {
+  var ct = customElements.get('card-tools');
 
-  class ConditionalCard extends cardTools.LitElement {
+  class WarunkowaConditionalCard extends ct.LitElement {
 
     static get properties() {
       return {
@@ -12,59 +11,52 @@
     }
 
     setConfig(config) {
-      this.validateConfig(config);
-      this.config = config;
-      this.card = cardTools.createCard(config.card);
-    }
+      if (!config.entity) {
+        throw new Error('You need to define an entity');
+      }
+      if (!config.condition) {
+        throw new Error('You need to define a condition');
+      }
+      if (!config.value) {
+        throw new Error('You need to define a value');
+      }
+      if (!config.card) {
+        throw new Error('You need to define a card');
+      }
 
-    validateConfig(config) {
-      const requiredConfigFields = ['entity', 'condition', 'value', 'card'];
-      requiredConfigFields.forEach(field => {
-        if (!config[field]) {
-          throw new Error(`You need to define a ${field}`);
-        }
-      });
+      this.config = config;
+      this.card = ct.createCard(config.card);
     }
 
     shouldUpdate(changedProps) {
       if (changedProps.has('hass')) {
-        this.updateDisplayCondition();
+        const entityId = this.config.entity;
+        const entityState = parseFloat(this.hass.states[entityId].state);
+        const condition = this.config.condition;
+        const value = parseFloat(this.config.value);
+
+        let shouldDisplay = false;
+        switch (condition) {
+          case 'above':
+            shouldDisplay = entityState > value;
+            break;
+          case 'below':
+            shouldDisplay = entityState < value;
+            break;
+        }
+        this.shouldDisplay = shouldDisplay;
         this.card.hass = this.hass;
       }
-      return cardTools.LitElement.prototype.shouldUpdate.call(this, changedProps);
-    }
-
-    updateDisplayCondition() {
-      const { entity, condition, value } = this.config;
-      const entityState = this.getEntityState(entity);
-
-      switch (condition) {
-        case 'above':
-          this.shouldDisplay = entityState > parseFloat(value);
-          break;
-        case 'below':
-          this.shouldDisplay = entityState < parseFloat(value);
-          break;
-        default:
-          this.shouldDisplay = false;
-      }
-    }
-
-    getEntityState(entityId) {
-      const entityState = this.hass.states[entityId];
-      if (!entityState) {
-        throw new Error(`No state found for entity: ${entityId}`);
-      }
-      return parseFloat(entityState.state);
+      return ct.LitElement.prototype.shouldUpdate.call(this, changedProps);
     }
 
     render() {
       if (!this.shouldDisplay) {
-        return cardTools.LitHtml``;
+        return null;
       }
-      return cardTools.LitHtml`
+      return ct.LitHtml `
         <ha-card>
-          ${cardTools.LitHtml`${this.card}`}
+          ${ct.LitHtml `${this.card}`}
         </ha-card>
       `;
     }
@@ -75,6 +67,6 @@
 
   }
 
-  customElements.define('conditional-card', ConditionalCard);
+  customElements.define('warunkowa-conditional-card', WarunkowaConditionalCard);
 
-})();
+});

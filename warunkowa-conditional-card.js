@@ -1,4 +1,5 @@
-customElements.whenDefined('card-tools').then(() => {
+(async () => {
+  await customElements.whenDefined('card-tools');
   const cardTools = customElements.get('card-tools');
 
   class ConditionalCard extends cardTools.LitElement {
@@ -59,11 +60,11 @@ customElements.whenDefined('card-tools').then(() => {
 
     render() {
       if (!this.shouldDisplay) {
-        return null;
+        return cardTools.LitHtml``;
       }
-      return cardTools.LitHtml `
+      return cardTools.LitHtml`
         <ha-card>
-          ${cardTools.LitHtml `${this.card}`}
+          ${cardTools.LitHtml`${this.card}`}
         </ha-card>
       `;
     }
@@ -76,4 +77,4 @@ customElements.whenDefined('card-tools').then(() => {
 
   customElements.define('conditional-card', ConditionalCard);
 
-});
+})();

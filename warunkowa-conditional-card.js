@@ -25,6 +25,7 @@ customElements.whenDefined('card-tools').then(() => {
       }
   
       this.config = config;
+      this.card = ct.createCard(config.card);
     }
   
     shouldUpdate(changedProps) {
@@ -44,6 +45,7 @@ customElements.whenDefined('card-tools').then(() => {
             break;
         }
         this.shouldDisplay = shouldDisplay;
+        this.card.hass = this.hass;
       }
       return ct.LitElement.prototype.shouldUpdate.call(this, changedProps);
     }
@@ -54,16 +56,13 @@ customElements.whenDefined('card-tools').then(() => {
       }
       return ct.LitHtml `
         <ha-card>
-          <div>
-            <h1>To jest twoja karta</h1>
-            <p>Wyświetla się tylko wtedy, gdy warunek jest spełniony.</p>
-          </div>
+          ${ct.LitHtml `${this.card}`}
         </ha-card>
       `;
     }
   
     getCardSize() {
-      return 1;
+      return this.card.getCardSize();
     }
   
   }
